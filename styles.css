@@ -121,6 +121,11 @@ a:hover { color: var(--link-dark); text-decoration: underline; text-underline-of
 .conference-card h3 { margin: 0 0 5px; color: #2d3236; font: 700 25px/1.2 Georgia, "Times New Roman", serif; }
 .conference-card div > p:last-child { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .photo-status { grid-column: 1 / -1; padding-top: 13px; color: #8b9297; border-top: 1px solid #dfe4e7; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
+.conference-card.has-photos { grid-column: 1 / -1; min-height: 0; }
+.conference-gallery { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-top: 17px; border-top: 1px solid #dfe4e7; }
+.conference-gallery figure { margin: 0; min-width: 0; }
+.conference-gallery img { width: 100%; aspect-ratio: 4 / 3; display: block; object-fit: contain; background: #e8ecee; }
+.conference-gallery figcaption { margin-top: 8px; color: #697278; font-size: 11px; line-height: 1.45; }
 .conference-isap { --conference: #356f9d; }
 .conference-ius24 { --conference: #7e5ba6; }
 .conference-ius25 { --conference: #2f897e; }
@@ -158,6 +163,7 @@ footer p { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 25px 
   .timeline-item { grid-template-columns: 1fr; gap: 7px; }
   .page-heading { margin-bottom: 40px; }
   .conference-grid { grid-template-columns: 1fr; }
+  .conference-gallery { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 430px) {
