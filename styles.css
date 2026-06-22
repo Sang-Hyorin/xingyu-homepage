@@ -35,6 +35,7 @@ a:hover { color: var(--link-dark); text-decoration: underline; text-underline-of
 .topbar nav a[href="publications.html"]::before { content: "≡"; }
 .topbar nav a[href="experience.html"]::before { content: "◷"; }
 .topbar nav a[href="awards.html"]::before { content: "☆"; }
+.topbar nav a[href="activities.html"]::before { content: "✦"; }
 .topbar nav a[href*="Xingyu_Liu_CV.pdf"]::before { content: "↓"; }
 .topbar nav a:hover { color: #111; background: var(--soft); border-color: var(--line); text-decoration: none; }
 .topbar nav a.active { color: #111; background: var(--soft); border-color: var(--line); font-weight: 650; }
@@ -112,6 +113,20 @@ a:hover { color: var(--link-dark); text-decoration: underline; text-underline-of
 .patent-list article { padding: 25px 0; border-bottom: 1px solid var(--line); }
 .patent-list h3 { margin: 0 0 7px; font: 700 18px/1.45 Georgia, "Times New Roman", serif; }
 .patent-list p { margin: 3px 0; color: var(--muted); font-size: 13px; }
+.conference-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.conference-card { --conference: #2f6f93; min-height: 245px; padding: 24px; display: grid; grid-template-columns: 62px 1fr; grid-template-rows: 1fr auto; gap: 18px; background: var(--soft); border: 1px solid #e5eaed; position: relative; overflow: hidden; }
+.conference-card::after { content: ""; position: absolute; width: 110px; height: 110px; right: -54px; top: -54px; border: 1px solid color-mix(in srgb, var(--conference) 35%, transparent); border-radius: 50%; }
+.conference-icon { width: 58px; height: 58px; display: grid; place-items: center; color: #fff; background: var(--conference); border-radius: 16px; font: 500 29px/1 Georgia, serif; transform: rotate(-4deg); }
+.conference-year { margin: 0 0 2px !important; color: var(--conference); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.conference-card h3 { margin: 0 0 5px; color: #2d3236; font: 700 25px/1.2 Georgia, "Times New Roman", serif; }
+.conference-card div > p:last-child { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+.photo-status { grid-column: 1 / -1; padding-top: 13px; color: #8b9297; border-top: 1px solid #dfe4e7; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
+.conference-isap { --conference: #356f9d; }
+.conference-ius24 { --conference: #7e5ba6; }
+.conference-ius25 { --conference: #2f897e; }
+.conference-mems { --conference: #bc654c; }
+.conference-nems { --conference: #737a31; }
+.conference-ims { --conference: #a7772b; }
 
 footer { border-top: 1px solid var(--line); }
 footer p { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 25px 0 34px; color: #8b9195; font-size: 11px; }
@@ -142,6 +157,7 @@ footer p { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 25px 
   .title-row { align-items: flex-start; flex-direction: column; gap: 0; margin-bottom: 24px; }
   .timeline-item { grid-template-columns: 1fr; gap: 7px; }
   .page-heading { margin-bottom: 40px; }
+  .conference-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 430px) {

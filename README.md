@@ -18,6 +18,7 @@ Then visit `http://localhost:4173`.
 - Edit the biography and news in `index.html`.
 - Edit research and education details in `research.html`, and honours in `awards.html`.
 - `publications.html` displays publication data from `content.js`.
+- Add conference photos and activity notes in `activities.html`.
 - Replace `assets/xingyu-liu.jpg` to update the profile photo.
 - Replace `assets/Xingyu_Liu_CV.pdf` to update the downloadable CV.
 
