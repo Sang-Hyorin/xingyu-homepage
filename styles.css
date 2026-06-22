@@ -124,7 +124,8 @@ a:hover { color: var(--link-dark); text-decoration: underline; text-underline-of
 .conference-card.has-photos { grid-column: 1 / -1; min-height: 0; }
 .conference-gallery { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-top: 17px; border-top: 1px solid #dfe4e7; }
 .conference-gallery figure { margin: 0; min-width: 0; }
-.conference-gallery img { width: 100%; aspect-ratio: 4 / 3; display: block; object-fit: contain; background: #e8ecee; }
+.conference-gallery img,
+.conference-gallery video { width: 100%; aspect-ratio: 4 / 3; display: block; object-fit: contain; background: #e8ecee; }
 .conference-gallery figcaption { margin-top: 8px; color: #697278; font-size: 11px; line-height: 1.45; }
 .conference-isap { --conference: #356f9d; }
 .conference-ius24 { --conference: #7e5ba6; }
