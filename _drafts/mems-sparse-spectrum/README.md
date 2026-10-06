@@ -29,6 +29,8 @@ Version 3 adds two integrated theory sections on pilot-based channel estimation,
 
 Version 4 explains why a frequency sweep is needed, what the complex SAW admittance response reveals, and how a calibrated VNA obtains S parameters from incident/reflected/transmitted waves. It includes a labelled 50-ohm one-port conversion example, distinguishes one-port impedance from two-port Y-parameter conversion, and cites manufacturer documentation.
 
+Version 5 adds three explicitly constructed teaching figures: normalized voltage/current phase examples, a simplified calibrated one-port VNA measurement schematic, and a dense BVD admittance curve with 16 uniformly sampled values. Adds worked phasor and impedance conversions, native MathML fractions, and a reproducible local figure source. Original published figures remain unchanged.
+
 ## Publication
 
 This directory is stored on the draft branch. The production navigation has not been changed. Before publication, finish editorial review and move the article to the site's chosen blog path, then add a link to the site. A draft branch in a public repository is publicly readable; draft status does not provide access control.
