@@ -23,6 +23,8 @@ The reported R² > 0.98 is attributed to the paper's 25% held-out cohort. Do not
 
 All reported research results and figures come from the published article. Constructed teaching examples are explicitly labelled.
 
+Version 2 (2026-10-06) introduces the article through VNA testing and adds concrete examples of scan spacing, missed narrow peaks, residual correction, equal-magnitude/different-phase responses, local peak-position errors, batch timing and unfamiliar device responses. The model's demonstrated scope remains complex admittance reconstruction for the paper's SAW devices. S11/S21 applications are introductory context and possible adaptation targets, not additional validated results.
+
 ## Publication
 
 This directory is stored on the draft branch. The production navigation has not been changed. Before publication, finish editorial review and move the article to the site's chosen blog path, then add a link to the site. A draft branch in a public repository is publicly readable; draft status does not provide access control.
