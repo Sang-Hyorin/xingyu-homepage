@@ -25,6 +25,8 @@ All reported research results and figures come from the published article. Const
 
 Version 2 (2026-10-06) introduces the article through VNA testing and adds concrete examples of scan spacing, missed narrow peaks, residual correction, equal-magnitude/different-phase responses, local peak-position errors, batch timing and unfamiliar device responses. The model's demonstrated scope remains complex admittance reconstruction for the paper's SAW devices. S11/S21 applications are introductory context and possible adaptation targets, not additional validated results.
 
+Version 3 adds two integrated theory sections on pilot-based channel estimation, delay/frequency sampling ambiguity, entropy and mutual information, data processing with fixed model/side information, a Bayesian interpretation of learned priors, and the conditional-mean interpretation of MMSE. Communications and information-theory sources are cited separately from the research paper. None of these analogies is presented as a sampling-theorem violation, an identifiability proof for the network, an adaptive sampling result, or evidence of calibrated posterior uncertainty.
+
 ## Publication
 
 This directory is stored on the draft branch. The production navigation has not been changed. Before publication, finish editorial review and move the article to the site's chosen blog path, then add a link to the site. A draft branch in a public repository is publicly readable; draft status does not provide access control.
