@@ -2,9 +2,23 @@
 
 ## 从声学谐振器出发，理解 AI 如何将稀疏测量补全为高分辨率频谱
 
-使用矢量网络分析仪（vector network analyzer，VNA）测试器件时，我们通常需要在一段频率范围内逐点扫描。无论是在观察天线的反射、滤波器的传输，还是谐振器的峰谷，读者都会遇到一个共同问题：频率步长越细，越容易看清局部变化；当同样的扫描需要在大量器件上重复时，数据采集的负担也随之增加。
+测量一个声表面波（surface acoustic wave，SAW）谐振器，通常需要让矢量网络分析仪（vector network analyzer，VNA）在一段频率范围内扫描。要理解为什么可以用 AI 减少测量点，先要知道：一次扫描到底在测什么？
 
-以声表面波（surface acoustic wave，SAW）谐振器为例，从端口测量得到的导纳曲线告诉我们器件在哪里谐振、响应有多尖锐，以及主模附近是否存在杂散响应。VNA 常测量 S 参数，导纳则可在明确端口定义和参考阻抗后由相应参数转换得到。本文讨论的模型重建复导纳谱；天线的 S₁₁、滤波器的 S₂₁ 等响应，是理解测量场景的例子，不能直接套用同一个已训练模型。
+**为什么要改变频率？** 谐振器对不同频率的电激励有不同的响应。SAW 器件通过压电效应将电激励耦合到声学振动；接近某个声学模的谐振频率时，这种耦合会在端口电学响应中留下明显特征。[1] 可以借敲击音叉建立直觉：不同音叉有不同的固有频率；对谐振器逐点改变激励频率，则是在寻找它对哪些频率响应显著，以及响应怎样变化。只测一个频点，只能知道器件在那个频率的表现，无法确定附近峰谷的位置、宽度或是否存在其他模式。
+
+**扫描时，要看什么响应？** 对单端口谐振器，常从复反射参数 S₁₁ 出发，再换算为阻抗 Z(f) 或导纳 Y(f) = G(f) + jB(f)。导纳表示电流与电压的复数比值：在小信号条件下，同样的电压激励在不同频率产生多大的电流，以及电流相对电压超前或滞后多少。实部 G 是电导，关联端口平均吸收的有功功率；虚部 B 是电纳，反映无功响应。两者共同记录谐振器的电学行为，不能只把“曲线有一个峰”当作全部信息。
+
+对于常用的单模等效电路，串联谐振附近通常出现低阻抗、高导纳的特征，反谐振附近则出现高阻抗、低导纳的特征；损耗、寄生参数和多模耦合会影响具体峰谷位置与形状。[1] 我们关心主模在哪里、峰有多尖锐、谐振与反谐振怎样分布，以及附近有没有杂散模。这些特征帮助评估器件的频率选择性、损耗与后续滤波器设计。品质因数 Q 的提取还需要明确所用定义和拟合或带宽方法，不能把任意曲线的峰宽直接当成统一的 Q 指标。
+
+**VNA 怎样得到这些数值？** 在常规扫频测量中，VNA 的信号源依次产生各频点的正弦激励，通过电缆或探针送到器件。仪器内部的定向耦合器或电桥分离行波，参考接收机记录入射波 a₁，测量接收机记录返回端口的波 b₁；比较两者的幅度与相位，得到复数比值 S₁₁ = b₁/a₁。“矢量”意味着测量同时保留幅度与相位。[8] 对双端口器件，从端口 1 激励、端口 2 测量传出波，还可以得到 S₂₁ = b₂/a₁，描述传输响应，测量时其余端口按 S 参数定义匹配终接。[9] 因此，天线常关注反射，滤波器常关注传输，而本文重建的是谐振器的复导纳。
+
+在实数参考阻抗 Z₀ 下，单端口的换算关系是：
+
+<div class="equation" role="math" aria-label="单端口反射参数换算阻抗和导纳"><span>Z(f) = Z₀ × [1 + S₁₁(f)] / [1 − S₁₁(f)]</span><span>Y(f) = 1 / Z(f) = (1 / Z₀) × [1 − S₁₁(f)] / [1 + S₁₁(f)]</span></div>
+
+**算一个具体的频点。** 设 Z₀ = 50 Ω，校准后的 S₁₁ = −1/3，表示返回波幅度为入射波的三分之一、相位相反。代入上式得到 Z = 25 Ω、Y = 0.04 S = 40 mS。改变频率，再取得新的 S₁₁ 并换算 Y，最终就得到导纳随频率变化的曲线。[8,10] 这个纯电阻例子只用于演示换算，实际 SAW 谐振器的导纳通常是复数。对于双端口的 Y 参数矩阵，必须使用完整 S 参数矩阵转换，不能把上面的单端口公式直接套到 Y₁₁。
+
+实际测量还要先校准：例如用已知的开路、短路和负载标准建立单端口误差模型，将参考面设在器件连接位置，校正测量路径中的系统误差。[11] 参考面之外的探针、夹具或焊盘若仍有影响，还需要相应的去嵌处理。于是，一次完整测量可以理解为“设置频率 → 施加激励 → 比较入射与返回信号 → 校准修正 → 换算导纳”，对各频点重复后拼成频谱。频率步长越细，越有机会看清窄峰；同样的扫描若需要在大量器件上重复，采集负担也随之增加。
 
 一个自然的问题是：如果只测量其中很少的频点，能否利用已经积累的器件知识，恢复其余位置的响应？这篇文章以已发表的 *Toward Intelligent Design and Measurement of MEMS Acoustic Wave Resonators* 为例，解释其中的稀疏频谱重建方法。论文报告：在其 25% 留出测试集上，Masked U-Net-1D 使用 16 个均匀采样频点恢复 1024 点导纳谱，R² 保持在 0.98 以上。本文重点讨论这个结果如何实现，以及应如何理解它的适用范围。[1]
 
@@ -162,4 +176,12 @@ Algorithm 1 中的三项损失分别检查：预测实部与虚部是否接近�
 
 [7] D. Tse and P. Viswanath, *Fundamentals of Wireless Communication*，[Appendix A, Section A.3：MMSE 与条件均值](https://web.stanford.edu/~dntse/Chapters_PDF/Fundamentals_Wireless_Communication_AppendixA.pdf)。
 
-论文标注 © 2026 The Authors，采用 [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) 许可。本文使用原 Fig. 5 与 Fig. 15，提取图形区域并另写中文图注，未更改图内科学内容。文中的扫描网格、漏峰、导频、纯延时歧义、候选频谱与熵、MMSE、mask、残差修正、复数幅值与相位、峰位误差、批量计时及异常器件场景均为教学构造，不是论文新增实验。通信与信息论内容用于解释方法及其边界，不构成该网络的可恢复性证明。
+[8] Keysight，[Reflection Measurements：入射波、反射波与幅相测量](https://helpfiles.keysight.com/csg/pxivna/Tutorials/Reflection_Measurements.htm)。
+
+[9] Keysight，[Measurement Parameters：S 参数与接收机比值](https://helpfiles.keysight.com/csg/e5080b/S1_Settings/Measurement_Parameters.htm)。
+
+[10] Keysight，[Measurement Method：反射法测量阻抗](https://helpfiles.keysight.com/csg/e5061b/quick_start_guide/impedance_measurement/measurement_procedure.htm)。
+
+[11] Keysight，[Select a Cal Type](https://helpfiles.keysight.com/csg/m9485a/s3_cals/select_cal.htm) 与 [Accurate Calibrations：参考面位置](https://helpfiles.keysight.com/csg/m9485a/s3_cals/accurate.htm)。
+
+论文标注 © 2026 The Authors，采用 [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) 许可。本文使用原 Fig. 5 与 Fig. 15，提取图形区域并另写中文图注，未更改图内科学内容。文中的音叉类比、50 Ω 换算、扫描网格、漏峰、导频、纯延时歧义、候选频谱与熵、MMSE、mask、残差修正、复数幅值与相位、峰位误差、批量计时及异常器件场景均为教学构造，不是论文新增实验。通信与信息论内容用于解释方法及其边界，不构成该网络的可恢复性证明。
