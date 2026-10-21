@@ -22,6 +22,7 @@ if (publicationList && content) publicationList.innerHTML = content.publications
     <p class="publication-venue">${item.venue}</p>
     <div class="publication-links">
       ${item.doi ? `<a href="${item.doi}" target="_blank" rel="noreferrer">DOI</a>` : ""}
+      ${!item.doi && item.publisher ? `<a href="${item.publisher}" target="_blank" rel="noreferrer">Publisher</a>` : ""}
       <a href="${item.scholar}" target="_blank" rel="noreferrer">Scholar</a>
     </div>
   </li>
