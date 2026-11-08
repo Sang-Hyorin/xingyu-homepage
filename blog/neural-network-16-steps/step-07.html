@@ -1,0 +1,47 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>7/16 扩展为两个特征通道</title><style>:root{--font-size-base:16px;--muted-foreground:#536274;--foreground:#162b40;--border:#d7e0e8;--background:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;color:var(--foreground);background:white;font:16px/1.65 system-ui,-apple-system,'Segoe UI',sans-serif}h1,h2,h3{line-height:1.35}h2,h3{font-weight:600}.btn{font:inherit;max-width:100%;white-space:normal;overflow-wrap:anywhere;padding:9px 13px;border:1px solid #b7c6d5;border-radius:7px;background:#f7fafc;color:#17334d;cursor:pointer}.btn[aria-pressed=true]{background:#145a7a;color:white;border-color:#145a7a}.btn:hover{box-shadow:0 0 0 2px #b4d8e6}.btn:focus-visible{outline:3px solid #e99a2d;outline-offset:3px}.card{padding:18px;background:#f5f8fa;border:1px solid #d7e0e8;border-radius:8px}.text-small{font-size:14px}.tabular-nums{font-variant-numeric:tabular-nums}[data-formula]{white-space:pre-wrap;font:15px/1.8 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}code{white-space:pre-wrap}a{color:#145a7a}button{touch-action:manipulation}@media(max-width:600px){body{padding:12px}.branches,.channels{gap:8px!important}.btn{padding:8px;font-size:14px}}body{max-width:880px;margin:auto}</style></head><body><nav><a href="index.html#step-7">← 返回教程</a> · <a href="article.md">Markdown</a></nav><p>复制一套独立参数形成第二个并行通道，输出是两项加权和。</p><div id="channels-seven">
+<style>
+#channels-seven .flow,#channels-seven .channel{display:flex;flex-direction:column;align-items:center;gap:calc(var(--font-size-base)*.4)}
+#channels-seven .channels{display:grid;grid-template-columns:1fr 1fr;gap:var(--font-size-base);width:100%}
+#channels-seven .channel{min-width:0;text-align:center}
+#channels-seven .arrow{color:var(--muted-foreground)}
+#channels-seven .details{margin-top:var(--font-size-base)}
+#channels-seven [data-formula]{white-space:pre-line;overflow-wrap:anywhere;margin-top:calc(var(--font-size-base)*.5)}
+#channels-seven [data-detail]{margin-top:calc(var(--font-size-base)*.5)}
+#channels-seven h3{margin-bottom:var(--font-size-base)}
+</style>
+<h2>7/16 · 扩展为两个特征通道</h2>
+<div class="flow" aria-label="两个并行特征通道的完整训练流程，点击查看计算">
+<button class="btn" data-step="0" aria-pressed="false">同一输入 x₁、x₂；目标 y</button>
+<span class="arrow">↙ 并行计算 ↘</span>
+<div class="channels">
+<div class="channel">
+<span>通道 1：保留第六步</span>
+<button class="btn" data-step="1" aria-pressed="false">加权求和 + bias → z₁、u₁</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="2" aria-pressed="false">SiLU(z₁) × u₁ → h₁</button>
+<span class="arrow">↓</span>
+<span>输出权重 v₁</span>
+</div>
+<div class="channel">
+<span>通道 2：新增一套</span>
+<button class="btn" data-step="3" aria-pressed="true">加权求和 + bias → z₂、u₂</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="4" aria-pressed="false">SiLU(z₂) × u₂ → h₂</button>
+<span class="arrow">↓</span>
+<span>输出权重 v₂</span>
+</div>
+</div>
+<span class="arrow">↘ 汇合 ↙</span>
+<button class="btn" data-step="5" aria-pressed="false">加权求和 → ŷ = v₁h₁ + v₂h₂</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="6" aria-pressed="false">与目标比较 → 损失 L</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="7" aria-pressed="false">反向传播 → 两个通道的梯度</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="8" aria-pressed="false">同时更新全部 14 个参数</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="9" aria-pressed="false">返回两个通道 → 再次预测</button>
+</div>
+<div class="details" aria-live="polite"><h3 data-label>加权求和 + bias → z₂、u₂</h3><div class="tabular-nums" data-formula>新增通道使用独立的权重。</div><p data-detail>两条通道并行处理同一输入。</p></div>
+</div>
+<noscript>请阅读 Markdown 版本查看全部公式与解释。</noscript><script>const nodes=[{"label":"同一输入 x₁、x₂；目标 y","formula":"x₁ = 2，x₂ = 1，目标 y = 6\n学习率 η = 1/1024","detail":"沿用第六步的样本和学习率；原来的 z、u、h、v 加下标 1，表示第一个通道。"},{"label":"加权求和 + bias → z₁、u₁","formula":"z₁ = w₁₁x₁ + w₁₂x₂ + b₁\n   = 2×2 + 1×1 + 0 = 5\nu₁ = a₁₁x₁ + a₁₂x₂ + c₁\n   = 0.25×2 + 0.5×1 + 0 = 1","detail":"完全保留原来两条支路。w₁₁ 是通道 1 对输入 x₁ 的权重，w₁₂ 是通道 1 对输入 x₂ 的权重。"},{"label":"SiLU(z₁) × u₁ → h₁","formula":"h₁ = SiLU(z₁) × u₁\n   = SiLU(5) × 1 ≈ 4.9665\n初始 v₁ = 1","detail":"这就是第六步的中间结果 h，只增加了通道下标。"},{"label":"加权求和 + bias → z₂、u₂","formula":"z₂ = w₂₁x₁ + w₂₂x₂ + b₂\n   = (−0.5)×2 + 0×1 + 0 = −1\nu₂ = a₂₁x₁ + a₂₂x₂ + c₂\n   = 0×2 + 1×1 + 0 = 1","detail":"新增一套相同计算，但使用独立参数。两套参数不同，才能从同一输入提取不同特征；这里的初值仅为教学演示。"},{"label":"SiLU(z₂) × u₂ → h₂","formula":"h₂ = SiLU(z₂) × u₂\n   = SiLU(−1) × 1 ≈ -0.2689\n初始 v₂ = 0.1","detail":"新增的通道也保留 SiLU 和乘法。SiLU 可以输出负数。"},{"label":"加权求和 → ŷ = v₁h₁ + v₂h₂","formula":"ŷ = v₁h₁ + v₂h₂\n  = 1×4.9665 + 0.1×(-0.2689)\n  ≈ 4.9396","detail":"原来的 v×h 现在扩展为两个通道贡献之和。它们是同一层的并行通道，不是先后两层。"},{"label":"与目标比较 → 损失 L","formula":"L = (ŷ − y)²\n  = (4.9396 − 6)² ≈ 1.1244","detail":"仍然只有一个最终预测和一个损失，两个通道一起为降低它而训练。"},{"label":"反向传播 → 两个通道的梯度","formula":"令 δ = ∂L/∂ŷ = 2(ŷ − 6) ≈ -2.1207\nδ 只是这段重复公式的简称。\n\n对每个通道 i = 1 或 2：\n∂L/∂vᵢ = δhᵢ\n∂L/∂hᵢ = δvᵢ\n∂L/∂zᵢ = δvᵢuᵢSiLU′(zᵢ)\n∂L/∂uᵢ = δvᵢSiLU(zᵢ)\n∂L/∂wᵢⱼ = (∂L/∂zᵢ)xⱼ\n∂L/∂bᵢ = ∂L/∂zᵢ\n∂L/∂aᵢⱼ = (∂L/∂uᵢ)xⱼ\n∂L/∂cᵢ = ∂L/∂uᵢ\n\n通道 1：(∂L/∂v₁, ∂L/∂z₁, ∂L/∂u₁)\n≈ (-10.5326, -2.1770, -10.5326)\n通道 2：(∂L/∂v₂, ∂L/∂z₂, ∂L/∂u₂)\n≈ (0.5703, -0.0153, 0.0570)","detail":"每个通道都沿用第六步的求导过程。求和把梯度传给两项，再分别沿各自的计算路径回传。"},{"label":"同时更新全部 14 个参数","formula":"参数新值 = 参数旧值 − η × 对应梯度\nη = 1/1024\n\n通道 1：\n(wᵢ₁, wᵢ₂, bᵢ) → (2.0043, 1.0021, 0.0021)\n(aᵢ₁, aᵢ₂, cᵢ) → (0.2706, 0.5103, 0.0103)\nvᵢ → 1.0103\n\n通道 2：\n(wᵢ₁, wᵢ₂, bᵢ) → (-0.5000, 0.0000, 0.0000)\n(aᵢ₁, aᵢ₂, cᵢ) → (-0.0001, 0.9999, -0.0001)\nvᵢ → 0.0994","detail":"每个通道 7 个参数，两个通道共 14 个参数；全部用更新前的梯度同时更新。"},{"label":"返回两个通道 → 再次预测","formula":"新 h₁ ≈ 5.2869，新 h₂ ≈ -0.2688\n新 ŷ = 新 v₁×新 h₁ + 新 v₂×新 h₂\n     ≈ 5.3146\n损失：1.1244 → 0.4698","detail":"两个通道各自重新计算，再汇总预测、算损失和更新参数。下一步可以将这些重复计算整理为矩阵运算。"}];const bs=[...document.querySelectorAll('button')];function select(i){bs.forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));document.querySelector('[data-label]').textContent=nodes[i].label;document.querySelector('[data-formula]').textContent=nodes[i].formula;document.querySelector('[data-detail]').textContent=nodes[i].detail;}bs.forEach((b,i)=>b.addEventListener('click',()=>select(i)));select(0);new ResizeObserver(()=>parent.postMessage({type:"flow-height",height:document.documentElement.scrollHeight},"*")).observe(document.body);</script></body></html>

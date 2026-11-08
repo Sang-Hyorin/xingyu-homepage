@@ -1,0 +1,46 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>10/16 SGD 动量</title><style>:root{--font-size-base:16px;--muted-foreground:#536274;--foreground:#162b40;--border:#d7e0e8;--background:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;color:var(--foreground);background:white;font:16px/1.65 system-ui,-apple-system,'Segoe UI',sans-serif}h1,h2,h3{line-height:1.35}h2,h3{font-weight:600}.btn{font:inherit;max-width:100%;white-space:normal;overflow-wrap:anywhere;padding:9px 13px;border:1px solid #b7c6d5;border-radius:7px;background:#f7fafc;color:#17334d;cursor:pointer}.btn[aria-pressed=true]{background:#145a7a;color:white;border-color:#145a7a}.btn:hover{box-shadow:0 0 0 2px #b4d8e6}.btn:focus-visible{outline:3px solid #e99a2d;outline-offset:3px}.card{padding:18px;background:#f5f8fa;border:1px solid #d7e0e8;border-radius:8px}.text-small{font-size:14px}.tabular-nums{font-variant-numeric:tabular-nums}[data-formula]{white-space:pre-wrap;font:15px/1.8 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}code{white-space:pre-wrap}a{color:#145a7a}button{touch-action:manipulation}@media(max-width:600px){body{padding:12px}.branches,.channels{gap:8px!important}.btn{padding:8px;font-size:14px}}body{max-width:880px;margin:auto}</style></head><body><nav><a href="index.html#step-10">← 返回教程</a> · <a href="article.md">Markdown</a></nav><p>保存历史梯度方向，让当前更新参考过去的方向。</p><div id="momentum-ten">
+<style>
+#momentum-ten .flow,#momentum-ten .branch{display:flex;flex-direction:column;align-items:center;gap:calc(var(--font-size-base)*.4)}
+#momentum-ten .branches{display:grid;grid-template-columns:1fr 1fr;gap:var(--font-size-base);width:100%}
+#momentum-ten .branch{min-width:0;text-align:center}
+#momentum-ten .arrow{color:var(--muted-foreground)}
+#momentum-ten .details{margin-top:var(--font-size-base)}
+#momentum-ten [data-formula]{white-space:pre-line;overflow-wrap:anywhere;margin-top:calc(var(--font-size-base)*.5)}
+#momentum-ten [data-detail]{margin-top:calc(var(--font-size-base)*.5)}
+#momentum-ten h3{margin-bottom:var(--font-size-base)}
+</style>
+<h2>10/16 · SGD 动量</h2>
+<div class="flow" aria-label="mini-batch 的完整训练流程，点击节点查看计算">
+<button class="btn" data-step="0" aria-pressed="false">保留两个样本 → 一个 batch</button>
+<span class="arrow">↓ 共用同一组 W、A、b、c、v</span>
+<div class="branches">
+<div class="branch">
+<button class="btn" data-step="1" aria-pressed="false">每个样本：z = Wx + b</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="2" aria-pressed="false">逐元素 SiLU(z)</button>
+</div>
+<div class="branch">
+<button class="btn" data-step="3" aria-pressed="false">每个样本：u = Ax + c</button>
+<span class="arrow">↓</span>
+<span>保留另一条支路</span>
+</div>
+</div>
+<span class="arrow">↘ 汇合 ↙</span>
+<button class="btn" data-step="4" aria-pressed="false">每个样本：h = SiLU(z) ⊙ u</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="5" aria-pressed="false">每个样本：ŷ = vᵀh</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="6" aria-pressed="false">两个样本的损失取平均</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="7" aria-pressed="false">反向传播 → 两个样本的平均梯度</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="8" aria-pressed="true">新增：动量 m = 0.9 × 旧 m + 当前梯度</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="9" aria-pressed="false">用动量更新同一组 14 个参数</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="10" aria-pressed="false">重复流程 → 看第二轮的动量作用</button>
+</div>
+<div class="details" aria-live="polite"><h3 data-label>新增第二个样本 → 一个 batch</h3><div class="tabular-nums" data-formula>样本 1：x = [2, 1]ᵀ，y = 6
+样本 2：x = [1, 2]ᵀ，y = 4</div><p data-detail>两个样本使用同一组参数。</p></div>
+</div>
+<noscript>请阅读 Markdown 版本查看全部公式与解释。</noscript><script>const nodes=[{"label":"保留两个样本 → 一个 batch","formula":"样本 1（保留）：x⁽¹⁾ = [2, 1]ᵀ，y⁽¹⁾ = 6\n样本 2（新增）：x⁽²⁾ = [1, 2]ᵀ，y⁽²⁾ = 4\nbatch size = 2；η = 1/1024\n\nW = [[2, 1], [−0.5, 0]]\nA = [[0.25, 0.5], [0, 1]]\nb = c = [0, 0]ᵀ；v = [1, 0.1]ᵀ","detail":"沿用第九步的两个样本、网络和学习率。新增动量系数 β = 0.9；每个参数的初始动量 m₀ = 0。"},{"label":"每个样本：z = Wx + b","formula":"z⁽ᵏ⁾ = Wx⁽ᵏ⁾ + b\n\n样本 1：\nz = [5.0000, -1.0000]ᵀ\n\n样本 2：\nz = [4.0000, -0.5000]ᵀ","detail":"W 和 b 只有一份。每个样本把自己的输入送入相同的加权求和。"},{"label":"逐元素 SiLU(z)","formula":"每个样本分别计算 SiLU(z)\n\n样本 1：\nSiLU(z) = [4.9665, -0.2689]ᵀ\n\n样本 2：\nSiLU(z) = [3.9281, -0.1888]ᵀ","detail":"激活仍然逐元素进行，两个样本之间不会在这里混合。"},{"label":"每个样本：u = Ax + c","formula":"u⁽ᵏ⁾ = Ax⁽ᵏ⁾ + c\n\n样本 1：\nu = [1.0000, 1.0000]ᵀ\n\n样本 2：\nu = [1.2500, 2.0000]ᵀ","detail":"另一条支路也保持不变；两个样本共用 A 和 c。"},{"label":"每个样本：h = SiLU(z) ⊙ u","formula":"h⁽ᵏ⁾ = SiLU(z⁽ᵏ⁾) ⊙ u⁽ᵏ⁾\n\n样本 1：\nh = [4.9665, -0.2689]ᵀ\n\n样本 2：\nh = [4.9101, -0.3775]ᵀ","detail":"每个样本内部的对应通道相乘，仍然保留两个特征通道。"},{"label":"每个样本：ŷ = vᵀh","formula":"ŷ⁽ᵏ⁾ = vᵀh⁽ᵏ⁾\n\n样本 1：\n预测 ŷ = 4.9396；目标 y = 6\n\n样本 2：\n预测 ŷ = 4.8723；目标 y = 4","detail":"同一组输出权重 v，为两个样本分别产生一个预测。"},{"label":"两个样本的损失取平均","formula":"L₁ = (ŷ⁽¹⁾ − 6)² ≈ 1.1244\nL₂ = (ŷ⁽²⁾ − 4)² ≈ 0.7609\n\nLbatch = (L₁ + L₂)/2 ≈ 0.9426","detail":"新增的核心步骤：先各自计算误差的平方，再取平均。不能先平均预测误差再平方，否则正负误差可能抵消。"},{"label":"反向传播 → 两个样本的平均梯度","formula":"对任意参数 θ：\n∂Lbatch/∂θ = (∂L₁/∂θ + ∂L₂/∂θ)/2\n\n例如输出权重 v₁：\n∂L₁/∂v₁ = 2(ŷ⁽¹⁾−6)h₁⁽¹⁾ ≈ -10.5326\n∂L₂/∂v₁ = 2(ŷ⁽²⁾−4)h₁⁽²⁾ ≈ 8.5663\n平均梯度 ≈ -0.9832\n\n各样本沿用原来的完整梯度链：\nδ⁽ᵏ⁾ = 2(ŷ⁽ᵏ⁾ − y⁽ᵏ⁾)\n∂Lₖ/∂v = δ⁽ᵏ⁾h⁽ᵏ⁾\n∂Lₖ/∂z = δ⁽ᵏ⁾v ⊙ u⁽ᵏ⁾ ⊙ SiLU′(z⁽ᵏ⁾)\n∂Lₖ/∂u = δ⁽ᵏ⁾v ⊙ SiLU(z⁽ᵏ⁾)\n∂Lₖ/∂W = (∂Lₖ/∂z)(x⁽ᵏ⁾)ᵀ\n∂Lₖ/∂A = (∂Lₖ/∂u)(x⁽ᵏ⁾)ᵀ\n∂Lₖ/∂b = ∂Lₖ/∂z；∂Lₖ/∂c = ∂Lₖ/∂u","detail":"仍按第九步的方法求平均梯度。动量不改变损失函数或求导方式，只改变接下来如何使用这个梯度。"},{"label":"新增：动量 m = 0.9 × 旧 m + 当前梯度","formula":"对每一个参数分别保存动量：\nmₜ = βmₜ₋₁ + gₜ\nβ = 0.9；m₀ = 0\ngₜ = 本轮 batch 的平均梯度\n\n以输出权重 v₁ 为例：\n第 1 轮 g₁ ≈ -0.9832\nm₁ = 0.9×0 + g₁ ≈ -0.9832\n\n第 2 轮 g₂ ≈ -0.5358\nm₂ = 0.9m₁ + g₂ ≈ -1.4206","detail":"m 是优化器记住的累计方向，不是新的网络权重，也不参与预测。每个参数都有自己的 m；这里采用普通 SGD momentum 的累加写法。"},{"label":"用动量更新同一组 14 个参数","formula":"参数更新改为：Θ新 = Θ旧 − ηmₜ\nη = 1/1024\n\n第 1 轮：m₁ = g₁，所以与第九步相同\n新 W ≈ [[2.0010, 0.9988],\n [-0.5000, -0.0001]]\n新 A ≈ [[0.2569, 0.4985],\n [-0.0000, 1.0000]]\n新 b ≈ [-0.0001, -0.0000]ᵀ\n新 c ≈ [0.0018, -0.0000]ᵀ\n新 v ≈ [1.0010, 0.1000]ᵀ\n\n第 2 轮，以 v₁ 为例：\nv₁ = 1.0010 − (1/1024)×(-1.4206)\n   ≈ 1.0023","detail":"原来直接减去学习率乘当前梯度；现在减去学习率乘累计动量。14 个参数仍然同时更新，并保留各自的动量供下一轮使用。"},{"label":"重复流程 → 看第二轮的动量作用","formula":"本例重复同一个 batch 两轮：\n平均损失 0.9426 → 0.8873 → 0.8014\n\n第 2 轮的 v₁：\n当前梯度 g₂ ≈ -0.5358\n历史贡献 0.9m₁ ≈ -0.8849\n实际使用 m₂ ≈ -1.4206\n\n相同初值与学习率、两轮普通 SGD：\n平均损失 ≈ 0.8416","detail":"本例连续两轮的方向相近，动量加强了更新。方向相反时，历史贡献也可能阻碍转向；动量并不保证每次更好。真实训练可以换下一个 batch，动量仍会保留。"}];const bs=[...document.querySelectorAll('button')];function select(i){bs.forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));document.querySelector('[data-label]').textContent=nodes[i].label;document.querySelector('[data-formula]').textContent=nodes[i].formula;document.querySelector('[data-detail]').textContent=nodes[i].detail;}bs.forEach((b,i)=>b.addEventListener('click',()=>select(i)));select(0);new ResizeObserver(()=>parent.postMessage({type:"flow-height",height:document.documentElement.scrollHeight},"*")).observe(document.body);</script></body></html>

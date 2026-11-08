@@ -1,0 +1,43 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>5/16 增加门控支路</title><style>:root{--font-size-base:16px;--muted-foreground:#536274;--foreground:#162b40;--border:#d7e0e8;--background:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;color:var(--foreground);background:white;font:16px/1.65 system-ui,-apple-system,'Segoe UI',sans-serif}h1,h2,h3{line-height:1.35}h2,h3{font-weight:600}.btn{font:inherit;max-width:100%;white-space:normal;overflow-wrap:anywhere;padding:9px 13px;border:1px solid #b7c6d5;border-radius:7px;background:#f7fafc;color:#17334d;cursor:pointer}.btn[aria-pressed=true]{background:#145a7a;color:white;border-color:#145a7a}.btn:hover{box-shadow:0 0 0 2px #b4d8e6}.btn:focus-visible{outline:3px solid #e99a2d;outline-offset:3px}.card{padding:18px;background:#f5f8fa;border:1px solid #d7e0e8;border-radius:8px}.text-small{font-size:14px}.tabular-nums{font-variant-numeric:tabular-nums}[data-formula]{white-space:pre-wrap;font:15px/1.8 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}code{white-space:pre-wrap}a{color:#145a7a}button{touch-action:manipulation}@media(max-width:600px){body{padding:12px}.branches,.channels{gap:8px!important}.btn{padding:8px;font-size:14px}}body{max-width:880px;margin:auto}</style></head><body><nav><a href="index.html#step-5">← 返回教程</a> · <a href="article.md">Markdown</a></nav><p>保留原支路，再增加 u = a₁x₁ + a₂x₂ + c，与 SiLU(z) 相乘。</p><div id="gated-five">
+<style>
+#gated-five .flow{display:flex;flex-direction:column;align-items:center;gap:calc(var(--font-size-base)*.4)}
+#gated-five .branches{display:grid;grid-template-columns:1fr 1fr;gap:var(--font-size-base);width:100%}
+#gated-five .branch{display:flex;flex-direction:column;align-items:center;gap:calc(var(--font-size-base)*.4);min-width:0;text-align:center}
+#gated-five .arrow{color:var(--muted-foreground)}
+#gated-five .details{margin-top:var(--font-size-base)}
+#gated-five [data-formula]{white-space:pre-line;overflow-wrap:anywhere;margin-top:calc(var(--font-size-base)*.5)}
+#gated-five [data-detail]{margin-top:calc(var(--font-size-base)*.5)}
+#gated-five h3{margin-bottom:var(--font-size-base)}
+</style>
+<h2>5/16 · 增加门控支路</h2>
+<div class="flow" aria-label="含两条分支的完整训练流程，点击节点查看算法">
+<button class="btn" data-step="0" aria-pressed="false">输入 x₁、x₂；目标 y</button>
+<span class="arrow">↙ 分成两条计算支路 ↘</span>
+<div class="branches">
+<div class="branch">
+<span class="text-small">保留第四步</span>
+<button class="btn" data-step="1" aria-pressed="false">加权求和 + bias → z</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="2" aria-pressed="false">SiLU(z)</button>
+</div>
+<div class="branch">
+<span class="text-small">新增分支</span>
+<button class="btn" data-step="3" aria-pressed="true">新的加权求和 → u</button>
+<span class="arrow">↓</span>
+<span>u 直接传给乘法</span>
+</div>
+</div>
+<span class="arrow">↘ 汇合 ↙</span>
+<button class="btn" data-step="4" aria-pressed="false">相乘 → ŷ = SiLU(z) × u</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="5" aria-pressed="false">与 y 比较 → 损失 L</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="6" aria-pressed="false">反向传播 → 两条分支的梯度</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="7" aria-pressed="false">更新两组权重与 bias</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="8" aria-pressed="false">返回两条支路 → 再次预测</button>
+</div>
+<div class="details" aria-live="polite"><h3 data-label>新的加权求和 → u</h3><div class="tabular-nums" data-formula>u = a₁x₁ + a₂x₂ + c</div><p data-detail>u 是新分支的计算结果，不是梯度。</p></div>
+</div>
+<noscript>请阅读 Markdown 版本查看全部公式与解释。</noscript><script>const nodes=[{"label":"输入 x₁、x₂；目标 y","formula":"x₁ = 2，x₂ = 1，目标 y = 6\n原分支：w₁ = 2，w₂ = 1，b = 0\n新分支：a₁ = 0.25，a₂ = 0.5，c = 0","detail":"同一组输入送入两条支路。原分支沿用上一步的初始参数。"},{"label":"加权求和 + bias → z","formula":"z = w₁x₁ + w₂x₂ + b\n  = 2×2 + 1×1 + 0 = 5","detail":"保留原来的 z、权重和 bias。"},{"label":"SiLU(z)","formula":"SiLU(z) = z × σ(z)\nσ(z) = 1/(1 + e⁻ᶻ)\nSiLU(5) ≈ 4.9665","detail":"保留第四步的 SiLU；它的输出现在用于调节另一条支路。"},{"label":"新的加权求和 → u","formula":"u = a₁x₁ + a₂x₂ + c\n  = 0.25×2 + 0.5×1 + 0 = 1","detail":"u 是新分支的输出，不是梯度。a₁、a₂、c 是新增的可训练参数，算法仍是你已学过的加权求和。"},{"label":"相乘 → ŷ = SiLU(z) × u","formula":"ŷ = SiLU(z) × u\n  ≈ 4.9665 × 1 = 4.9665","detail":"新增的核心运算只有相乘。初始 u = 1，所以初始预测和第四步相同；SiLU 门控值并不局限于 0～1。"},{"label":"与 y 比较 → 损失 L","formula":"L = (ŷ − y)²\n  = (4.9665 − 6)² ≈ 1.0680","detail":"保留原来的平方误差。"},{"label":"反向传播 → 两条分支的梯度","formula":"∂L/∂ŷ = 2(ŷ − 6) ≈ -2.0669\n\n原分支：\n∂L/∂z = (∂L/∂ŷ) × u × SiLU′(z) ≈ -2.1218\n(∂L/∂w₁, ∂L/∂w₂, ∂L/∂b)\n= (2∂L/∂z, ∂L/∂z, ∂L/∂z)\n\n新分支：\n∂L/∂u = (∂L/∂ŷ) × SiLU(z) ≈ -10.2655\n(∂L/∂a₁, ∂L/∂a₂, ∂L/∂c)\n= (2∂L/∂u, ∂L/∂u, ∂L/∂u)","detail":"乘法处把梯度分到两条支路：对其中一个乘数求导，就乘以另一个乘数。"},{"label":"更新两组权重与 bias","formula":"参数新值 = 参数旧值 − η × 对应梯度\n本例 η = 1/1024\n(w₁, w₂, b) → (2.0041, 1.0021, 0.0021)\n(a₁, a₂, c) → (0.2700, 0.5100, 0.0100)","detail":"六个参数同时更新。新增支路的梯度较大，本例将学习率从 1/16 调小到 1/1024，避免一次更新跨得太远。"},{"label":"返回两条支路 → 再次预测","formula":"新 z ≈ 5.0124，新 u ≈ 1.0601\n新 ŷ = SiLU(新 z) × 新 u ≈ 5.2788\n损失：1.0680 → 0.5201","detail":"两条支路重新计算，再相乘、算损失、反向传播，重复训练。"}];const bs=[...document.querySelectorAll('button')];function select(i){bs.forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));document.querySelector('[data-label]').textContent=nodes[i].label;document.querySelector('[data-formula]').textContent=nodes[i].formula;document.querySelector('[data-detail]').textContent=nodes[i].detail;}bs.forEach((b,i)=>b.addEventListener('click',()=>select(i)));select(0);new ResizeObserver(()=>parent.postMessage({type:"flow-height",height:document.documentElement.scrollHeight},"*")).observe(document.body);</script></body></html>

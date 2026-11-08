@@ -1,0 +1,44 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>9/16 mini-batch 与平均梯度</title><style>:root{--font-size-base:16px;--muted-foreground:#536274;--foreground:#162b40;--border:#d7e0e8;--background:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;color:var(--foreground);background:white;font:16px/1.65 system-ui,-apple-system,'Segoe UI',sans-serif}h1,h2,h3{line-height:1.35}h2,h3{font-weight:600}.btn{font:inherit;max-width:100%;white-space:normal;overflow-wrap:anywhere;padding:9px 13px;border:1px solid #b7c6d5;border-radius:7px;background:#f7fafc;color:#17334d;cursor:pointer}.btn[aria-pressed=true]{background:#145a7a;color:white;border-color:#145a7a}.btn:hover{box-shadow:0 0 0 2px #b4d8e6}.btn:focus-visible{outline:3px solid #e99a2d;outline-offset:3px}.card{padding:18px;background:#f5f8fa;border:1px solid #d7e0e8;border-radius:8px}.text-small{font-size:14px}.tabular-nums{font-variant-numeric:tabular-nums}[data-formula]{white-space:pre-wrap;font:15px/1.8 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}code{white-space:pre-wrap}a{color:#145a7a}button{touch-action:manipulation}@media(max-width:600px){body{padding:12px}.branches,.channels{gap:8px!important}.btn{padding:8px;font-size:14px}}body{max-width:880px;margin:auto}</style></head><body><nav><a href="index.html#step-9">← 返回教程</a> · <a href="article.md">Markdown</a></nav><p>网络不变，新增第二个训练样本，用平均梯度统一更新一次。</p><div id="batch-nine">
+<style>
+#batch-nine .flow,#batch-nine .branch{display:flex;flex-direction:column;align-items:center;gap:calc(var(--font-size-base)*.4)}
+#batch-nine .branches{display:grid;grid-template-columns:1fr 1fr;gap:var(--font-size-base);width:100%}
+#batch-nine .branch{min-width:0;text-align:center}
+#batch-nine .arrow{color:var(--muted-foreground)}
+#batch-nine .details{margin-top:var(--font-size-base)}
+#batch-nine [data-formula]{white-space:pre-line;overflow-wrap:anywhere;margin-top:calc(var(--font-size-base)*.5)}
+#batch-nine [data-detail]{margin-top:calc(var(--font-size-base)*.5)}
+#batch-nine h3{margin-bottom:var(--font-size-base)}
+</style>
+<h2>9/16 · mini-batch 与平均梯度</h2>
+<div class="flow" aria-label="mini-batch 的完整训练流程，点击节点查看计算">
+<button class="btn" data-step="0" aria-pressed="true">新增第二个样本 → 一个 batch</button>
+<span class="arrow">↓ 共用同一组 W、A、b、c、v</span>
+<div class="branches">
+<div class="branch">
+<button class="btn" data-step="1" aria-pressed="false">每个样本：z = Wx + b</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="2" aria-pressed="false">逐元素 SiLU(z)</button>
+</div>
+<div class="branch">
+<button class="btn" data-step="3" aria-pressed="false">每个样本：u = Ax + c</button>
+<span class="arrow">↓</span>
+<span>保留另一条支路</span>
+</div>
+</div>
+<span class="arrow">↘ 汇合 ↙</span>
+<button class="btn" data-step="4" aria-pressed="false">每个样本：h = SiLU(z) ⊙ u</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="5" aria-pressed="false">每个样本：ŷ = vᵀh</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="6" aria-pressed="false">新增：两个样本的损失取平均</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="7" aria-pressed="false">反向传播 → 两个样本的平均梯度</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="8" aria-pressed="false">更新同一组 14 个参数，一次</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="9" aria-pressed="false">再次预测两个样本 → 检查平均损失</button>
+</div>
+<div class="details" aria-live="polite"><h3 data-label>新增第二个样本 → 一个 batch</h3><div class="tabular-nums" data-formula>样本 1：x = [2, 1]ᵀ，y = 6
+样本 2：x = [1, 2]ᵀ，y = 4</div><p data-detail>两个样本使用同一组参数。</p></div>
+</div>
+<noscript>请阅读 Markdown 版本查看全部公式与解释。</noscript><script>const nodes=[{"label":"新增第二个样本 → 一个 batch","formula":"样本 1（保留）：x⁽¹⁾ = [2, 1]ᵀ，y⁽¹⁾ = 6\n样本 2（新增）：x⁽²⁾ = [1, 2]ᵀ，y⁽²⁾ = 4\nbatch size = 2；η = 1/1024\n\nW = [[2, 1], [−0.5, 0]]\nA = [[0.25, 0.5], [0, 1]]\nb = c = [0, 0]ᵀ；v = [1, 0.1]ᵀ","detail":"括号上标 (1)、(2) 表示样本编号，不是乘方。网络和初始参数沿用第八步；新增的是第二个教学样本。"},{"label":"每个样本：z = Wx + b","formula":"z⁽ᵏ⁾ = Wx⁽ᵏ⁾ + b\n\n样本 1：\nz = [5.0000, -1.0000]ᵀ\n\n样本 2：\nz = [4.0000, -0.5000]ᵀ","detail":"W 和 b 只有一份。每个样本把自己的输入送入相同的加权求和。"},{"label":"逐元素 SiLU(z)","formula":"每个样本分别计算 SiLU(z)\n\n样本 1：\nSiLU(z) = [4.9665, -0.2689]ᵀ\n\n样本 2：\nSiLU(z) = [3.9281, -0.1888]ᵀ","detail":"激活仍然逐元素进行，两个样本之间不会在这里混合。"},{"label":"每个样本：u = Ax + c","formula":"u⁽ᵏ⁾ = Ax⁽ᵏ⁾ + c\n\n样本 1：\nu = [1.0000, 1.0000]ᵀ\n\n样本 2：\nu = [1.2500, 2.0000]ᵀ","detail":"另一条支路也保持不变；两个样本共用 A 和 c。"},{"label":"每个样本：h = SiLU(z) ⊙ u","formula":"h⁽ᵏ⁾ = SiLU(z⁽ᵏ⁾) ⊙ u⁽ᵏ⁾\n\n样本 1：\nh = [4.9665, -0.2689]ᵀ\n\n样本 2：\nh = [4.9101, -0.3775]ᵀ","detail":"每个样本内部的对应通道相乘，仍然保留两个特征通道。"},{"label":"每个样本：ŷ = vᵀh","formula":"ŷ⁽ᵏ⁾ = vᵀh⁽ᵏ⁾\n\n样本 1：\n预测 ŷ = 4.9396；目标 y = 6\n\n样本 2：\n预测 ŷ = 4.8723；目标 y = 4","detail":"同一组输出权重 v，为两个样本分别产生一个预测。"},{"label":"新增：两个样本的损失取平均","formula":"L₁ = (ŷ⁽¹⁾ − 6)² ≈ 1.1244\nL₂ = (ŷ⁽²⁾ − 4)² ≈ 0.7609\n\nLbatch = (L₁ + L₂)/2 ≈ 0.9426","detail":"新增的核心步骤：先各自计算误差的平方，再取平均。不能先平均预测误差再平方，否则正负误差可能抵消。"},{"label":"反向传播 → 两个样本的平均梯度","formula":"对任意参数 θ：\n∂Lbatch/∂θ = (∂L₁/∂θ + ∂L₂/∂θ)/2\n\n例如输出权重 v₁：\n∂L₁/∂v₁ = 2(ŷ⁽¹⁾−6)h₁⁽¹⁾ ≈ -10.5326\n∂L₂/∂v₁ = 2(ŷ⁽²⁾−4)h₁⁽²⁾ ≈ 8.5663\n平均梯度 ≈ -0.9832\n\n各样本沿用原来的完整梯度链：\nδ⁽ᵏ⁾ = 2(ŷ⁽ᵏ⁾ − y⁽ᵏ⁾)\n∂Lₖ/∂v = δ⁽ᵏ⁾h⁽ᵏ⁾\n∂Lₖ/∂z = δ⁽ᵏ⁾v ⊙ u⁽ᵏ⁾ ⊙ SiLU′(z⁽ᵏ⁾)\n∂Lₖ/∂u = δ⁽ᵏ⁾v ⊙ SiLU(z⁽ᵏ⁾)\n∂Lₖ/∂W = (∂Lₖ/∂z)(x⁽ᵏ⁾)ᵀ\n∂Lₖ/∂A = (∂Lₖ/∂u)(x⁽ᵏ⁾)ᵀ\n∂Lₖ/∂b = ∂Lₖ/∂z；∂Lₖ/∂c = ∂Lₖ/∂u","detail":"两个样本的梯度都在同一组旧参数上计算，再平均。实现时也可以直接对平均损失做一次反向传播，结果相同。"},{"label":"更新同一组 14 个参数，一次","formula":"Θ新 = Θ旧 − η × 平均梯度\nη = 1/1024\n\n新 W ≈ [[2.0010, 0.9988],\n [-0.5000, -0.0001]]\n新 A ≈ [[0.2569, 0.4985],\n [-0.0000, 1.0000]]\n新 b ≈ [-0.0001, -0.0000]ᵀ\n新 c ≈ [0.0018, -0.0000]ᵀ\n新 v ≈ [1.0010, 0.1000]ᵀ","detail":"同一组 14 个参数只更新一次。不是先用样本 1 更新，再用新参数计算样本 2；那是不同的训练过程。"},{"label":"再次预测两个样本 → 检查平均损失","formula":"样本 1：预测 4.9396 → 5.0154\n损失 1.1244 → 0.9694\n\n样本 2：预测 4.8723 → 4.8973\n损失 0.7609 → 0.8051\n\n平均损失：0.9426 → 0.8873","detail":"优化目标是整个 batch 的平均损失，不保证每个样本每次都变好。这里用原 batch 检查一次更新；真实训练通常继续取下一个 batch。"}];const bs=[...document.querySelectorAll('button')];function select(i){bs.forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));document.querySelector('[data-label]').textContent=nodes[i].label;document.querySelector('[data-formula]').textContent=nodes[i].formula;document.querySelector('[data-detail]').textContent=nodes[i].detail;}bs.forEach((b,i)=>b.addEventListener('click',()=>select(i)));select(0);new ResizeObserver(()=>parent.postMessage({type:"flow-height",height:document.documentElement.scrollHeight},"*")).observe(document.body);</script></body></html>

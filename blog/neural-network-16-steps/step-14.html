@@ -1,0 +1,54 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>14/16 早停与最佳检查点</title><style>:root{--font-size-base:16px;--muted-foreground:#536274;--foreground:#162b40;--border:#d7e0e8;--background:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;color:var(--foreground);background:white;font:16px/1.65 system-ui,-apple-system,'Segoe UI',sans-serif}h1,h2,h3{line-height:1.35}h2,h3{font-weight:600}.btn{font:inherit;max-width:100%;white-space:normal;overflow-wrap:anywhere;padding:9px 13px;border:1px solid #b7c6d5;border-radius:7px;background:#f7fafc;color:#17334d;cursor:pointer}.btn[aria-pressed=true]{background:#145a7a;color:white;border-color:#145a7a}.btn:hover{box-shadow:0 0 0 2px #b4d8e6}.btn:focus-visible{outline:3px solid #e99a2d;outline-offset:3px}.card{padding:18px;background:#f5f8fa;border:1px solid #d7e0e8;border-radius:8px}.text-small{font-size:14px}.tabular-nums{font-variant-numeric:tabular-nums}[data-formula]{white-space:pre-wrap;font:15px/1.8 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}code{white-space:pre-wrap}a{color:#145a7a}button{touch-action:manipulation}@media(max-width:600px){body{padding:12px}.branches,.channels{gap:8px!important}.btn{padding:8px;font-size:14px}}body{max-width:880px;margin:auto}</style></head><body><nav><a href="index.html#step-14">← 返回教程</a> · <a href="article.md">Markdown</a></nav><p>记录验证损失，连续无改善则停止，恢复最佳检查点。</p><div id="early-stop-fourteen">
+<style>
+#early-stop-fourteen .flow,#early-stop-fourteen .branch{display:flex;flex-direction:column;align-items:center;gap:calc(var(--font-size-base)*.4)}
+#early-stop-fourteen .branches{display:grid;grid-template-columns:1fr 1fr;gap:var(--font-size-base);width:100%}
+#early-stop-fourteen .branch{min-width:0;text-align:center}
+#early-stop-fourteen .arrow{color:var(--muted-foreground)}
+#early-stop-fourteen .details{margin-top:var(--font-size-base)}
+#early-stop-fourteen [data-formula]{white-space:pre-line;overflow-wrap:anywhere;margin-top:calc(var(--font-size-base)*.5)}
+#early-stop-fourteen [data-detail]{margin-top:calc(var(--font-size-base)*.5)}
+#early-stop-fourteen h3{margin-bottom:var(--font-size-base)}
+</style>
+<h2>14/16 · 早停与最佳检查点</h2>
+<div class="flow" aria-label="mini-batch 的完整训练流程，点击节点查看计算">
+<button class="btn" data-step="0" aria-pressed="false">保留两个样本 → 一个 batch</button>
+<span class="arrow">↓ 共用同一组 W、A、b、c、v</span>
+<div class="branches">
+<div class="branch">
+<button class="btn" data-step="1" aria-pressed="false">每个样本：z = Wx + b</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="2" aria-pressed="false">逐元素 SiLU(z)</button>
+</div>
+<div class="branch">
+<button class="btn" data-step="3" aria-pressed="false">每个样本：u = Ax + c</button>
+<span class="arrow">↓</span>
+<span>保留另一条支路</span>
+</div>
+</div>
+<span class="arrow">↘ 汇合 ↙</span>
+<button class="btn" data-step="4" aria-pressed="false">每个样本：h = SiLU(z) ⊙ u</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="5" aria-pressed="false">每个样本：ŷ = vᵀh</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="6" aria-pressed="false">两个样本的损失取平均</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="7" aria-pressed="false">反向传播 → 两个样本的平均梯度</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="8" aria-pressed="false">保留 Adam：m、s 与起步偏差校正</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="9" aria-pressed="false">保留 AdamW：更新参数 + 权重衰减</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="10" aria-pressed="false">重复训练流程 → 记录训练损失</button>
+<span class="arrow">↓ 定期检查，参数暂时固定</span>
+<button class="btn" data-step="11" aria-pressed="false">保留验证：新样本 → 同一网络 → 验证损失</button>
+<span class="arrow">↓ 不反向传播，不更新参数</span>
+<button class="btn" data-step="12" aria-pressed="false">比较两条损失 → 查看变化趋势</button>
+<span class="arrow">↓</span>
+<button class="btn" data-step="13" aria-pressed="true">新增：验证有改善？保存参数并清零计数</button>
+<span class="arrow">↓ 无改善则计数 +1；未达阈值就返回训练</span>
+<button class="btn" data-step="14" aria-pressed="false">连续 3 次无改善 → 停止并恢复最佳参数</button>
+</div>
+<div class="details" aria-live="polite"><h3 data-label>新增第二个样本 → 一个 batch</h3><div class="tabular-nums" data-formula>样本 1：x = [2, 1]ᵀ，y = 6
+样本 2：x = [1, 2]ᵀ，y = 4</div><p data-detail>两个样本使用同一组参数。</p></div>
+</div>
+<noscript>请阅读 Markdown 版本查看全部公式与解释。</noscript><script>const nodes=[{"label":"保留两个样本 → 一个 batch","formula":"样本 1（保留）：x⁽¹⁾ = [2, 1]ᵀ，y⁽¹⁾ = 6\n样本 2（新增）：x⁽²⁾ = [1, 2]ᵀ，y⁽²⁾ = 4\nbatch size = 2；η = 1/1024\n\nW = [[2, 1], [−0.5, 0]]\nA = [[0.25, 0.5], [0, 1]]\nb = c = [0, 0]ᵀ；v = [1, 0.1]ᵀ","detail":"原来的两个样本仍是训练集，用于算梯度和更新参数。新增验证样本 x = [1.5, 1.5]ᵀ、目标 y = 5，仅用于检查。这些数值是教学例子，不是实际实验数据。"},{"label":"每个样本：z = Wx + b","formula":"z⁽ᵏ⁾ = Wx⁽ᵏ⁾ + b\n\n样本 1：\nz = [5.0000, -1.0000]ᵀ\n\n样本 2：\nz = [4.0000, -0.5000]ᵀ","detail":"W 和 b 只有一份。每个样本把自己的输入送入相同的加权求和。"},{"label":"逐元素 SiLU(z)","formula":"每个样本分别计算 SiLU(z)\n\n样本 1：\nSiLU(z) = [4.9665, -0.2689]ᵀ\n\n样本 2：\nSiLU(z) = [3.9281, -0.1888]ᵀ","detail":"激活仍然逐元素进行，两个样本之间不会在这里混合。"},{"label":"每个样本：u = Ax + c","formula":"u⁽ᵏ⁾ = Ax⁽ᵏ⁾ + c\n\n样本 1：\nu = [1.0000, 1.0000]ᵀ\n\n样本 2：\nu = [1.2500, 2.0000]ᵀ","detail":"另一条支路也保持不变；两个样本共用 A 和 c。"},{"label":"每个样本：h = SiLU(z) ⊙ u","formula":"h⁽ᵏ⁾ = SiLU(z⁽ᵏ⁾) ⊙ u⁽ᵏ⁾\n\n样本 1：\nh = [4.9665, -0.2689]ᵀ\n\n样本 2：\nh = [4.9101, -0.3775]ᵀ","detail":"每个样本内部的对应通道相乘，仍然保留两个特征通道。"},{"label":"每个样本：ŷ = vᵀh","formula":"ŷ⁽ᵏ⁾ = vᵀh⁽ᵏ⁾\n\n样本 1：\n预测 ŷ = 4.9396；目标 y = 6\n\n样本 2：\n预测 ŷ = 4.8723；目标 y = 4","detail":"同一组输出权重 v，为两个样本分别产生一个预测。"},{"label":"两个样本的损失取平均","formula":"L₁ = (ŷ⁽¹⁾ − 6)² ≈ 1.1244\nL₂ = (ŷ⁽²⁾ − 4)² ≈ 0.7609\n\nLbatch = (L₁ + L₂)/2 ≈ 0.9426","detail":"新增的核心步骤：先各自计算误差的平方，再取平均。不能先平均预测误差再平方，否则正负误差可能抵消。"},{"label":"反向传播 → 两个样本的平均梯度","formula":"对任意参数 θ：\n∂Lbatch/∂θ = (∂L₁/∂θ + ∂L₂/∂θ)/2\n\n例如输出权重 v₁：\n∂L₁/∂v₁ = 2(ŷ⁽¹⁾−6)h₁⁽¹⁾ ≈ -10.5326\n∂L₂/∂v₁ = 2(ŷ⁽²⁾−4)h₁⁽²⁾ ≈ 8.5663\n平均梯度 ≈ -0.9832\n\n各样本沿用原来的完整梯度链：\nδ⁽ᵏ⁾ = 2(ŷ⁽ᵏ⁾ − y⁽ᵏ⁾)\n∂Lₖ/∂v = δ⁽ᵏ⁾h⁽ᵏ⁾\n∂Lₖ/∂z = δ⁽ᵏ⁾v ⊙ u⁽ᵏ⁾ ⊙ SiLU′(z⁽ᵏ⁾)\n∂Lₖ/∂u = δ⁽ᵏ⁾v ⊙ SiLU(z⁽ᵏ⁾)\n∂Lₖ/∂W = (∂Lₖ/∂z)(x⁽ᵏ⁾)ᵀ\n∂Lₖ/∂A = (∂Lₖ/∂u)(x⁽ᵏ⁾)ᵀ\n∂Lₖ/∂b = ∂Lₖ/∂z；∂Lₖ/∂c = ∂Lₖ/∂u","detail":"仍然对 batch 的平均平方误差求梯度。AdamW 的权重衰减不会加进这里的梯度，也不会直接加进 m、s；之后权重变化会间接影响下一轮梯度。"},{"label":"保留 Adam：m、s 与起步偏差校正","formula":"沿用 Adam，对每个参数分别计算：\ngₜ = 本轮平均损失的梯度\nmₜ = 0.9mₜ₋₁ + 0.1gₜ\nsₜ = 0.999sₜ₋₁ + 0.001gₜ²\n\nm̂ₜ = mₜ/(1 − 0.9ᵗ)\nŝₜ = sₜ/(1 − 0.999ᵗ)\nAdam 更新方向 = m̂ₜ/(√ŝₜ + ε)\nε = 10⁻⁸\n\n第 1 轮，输出权重 v₁：\ng₁ ≈ -0.9832\nm̂₁ ≈ -0.9832\nŝ₁ ≈ 0.9666","detail":"这部分与第十一页完全相同。新增的权重衰减在下一节点单独作用，不经过梯度大小的缩放。"},{"label":"保留 AdamW：更新参数 + 权重衰减","formula":"原来 Adam：\nθ新 = θ旧 − η × m̂ₜ/(√ŝₜ + ε)\n\n现在 AdamW：\nθ新 = θ旧 − η × m̂ₜ/(√ŝₜ + ε) − ηλθ旧\n      = (1 − ηλ)θ旧 − Adam 更新量\n\nη = 1/1024；本例 λ = 0.01\n仅收缩这一项的系数：1 − ηλ ≈ 0.9999902344\n\n第 1 轮，以 v₁ = 1 为例：\nAdam 部分将它增加约 0.0009765625\n衰减部分将它减少 0.0000097656\n最终 v₁ ≈ 1.0009667969\n\n本例：W、A、v 衰减；b、c 不衰减","detail":"衰减项让正权重变小、负权重变得没那么负，都是向零靠近。总更新仍由两项共同决定，所以 v₁ 最终依然增大。λ 是人为设置的超参数，不是学出来的权重。"},{"label":"重复训练流程 → 记录训练损失","formula":"同一个 batch 连续更新两轮：\n平均损失 0.942647 → 0.929028 → 0.915593\n\n第 2 轮，v₁ 的 Adam 方向：\nm̂₂/(√ŝ₂ + ε) ≈ -0.9976\n衰减量 ηλv₁ ≈ 0.0000097751\n更新后 v₁ ≈ 1.0019312562","detail":"权重衰减是正则化手段，用来约束权重规模，可能帮助泛化；效果需要看验证集。这个两样本例子只能演示怎么算，不能证明泛化改善。"},{"label":"保留验证：新样本 → 同一网络 → 验证损失","formula":"新增验证样本：x = [1.5, 1.5]ᵀ，目标 y = 5\n使用训练两轮后的参数，执行同一条前向流程：\n\nz = Wx + b ≈ [4.4980, -0.7578]ᵀ\nu = Ax + c ≈ [1.1269, 1.4980]ᵀ\nh = SiLU(z) ⊙ u ≈ [5.0131, -0.3623]ᵀ\nŷ = vᵀh ≈ 4.9858\nLval = (ŷ − 5)² ≈ 0.000201\n\n到这里结束：不算梯度，不更新 W、A、b、c、v\n也不更新 AdamW 的 m、s","detail":"验证使用相同的模型，但这个样本从未参与训练更新。真实验证集通常包含许多独立样本，报告它们的平均损失；仅一个样本无法可靠判断泛化。"},{"label":"比较两条损失 → 查看变化趋势","formula":"本例的损失记录：\n初始：训练 0.942647；验证 0.000853\n第 1 轮：训练 0.929028；验证 0.000470\n第 2 轮：训练 0.915593；验证 0.000201\n\n观察随训练变化的趋势：\n训练下降、验证也下降 → 可能正在学到可泛化规律\n训练下降、验证持续上升 → 过拟合警示\n\n可以按预先约定的验证指标，保留表现最好的检查点","detail":"验证集可用于选择训练轮数或 λ 等超参数，但不能作为训练样本回传梯度。反复选方案也会间接适应验证集，最终结论还需要独立测试集。两条损失之间没有通用的“合格差值”。"},{"label":"新增：验证有改善？保存参数并清零计数","formula":"新增三个状态：\nbest = 目前保存的最佳验证损失\nbad = 连续没有明显改善的检查次数\nbest_params = 当时的模型参数副本\n\n本例设置：\n每次参数更新后验证一次\nmin_delta = 0.000001\npatience = 3 次验证检查\n\n如果 Lval \u003c best − min_delta：\n  best ← Lval；保存当前参数；bad ← 0\n否则：\n  bad ← bad + 1\n\n只要 bad \u003c 3，就返回训练流程","detail":"min_delta 规定多大的下降才算明显改善；patience 允许短暂波动。本例每次更新就验证，真实任务通常每隔若干次更新或一个 epoch 验证。计数按验证检查次数，不一定按 epoch。"},{"label":"连续 3 次无改善 → 停止并恢复最佳参数","formula":"沿用本例数据与 AdamW，实际计算得到：\n更新轮次 | 训练损失 | 验证损失 | bad\n1 | 0.929028 | 0.000470 | 0（保存）\n2 | 0.915593 | 0.000201 | 0（保存）\n3 | 0.902344 | 0.000045 | 0（保存）\n4 | 0.889285 | 0.000000 | 0（保存）\n5 | 0.876417 | 0.000063 | 1\n6 | 0.863742 | 0.000228 | 2\n7 | 0.851259 | 0.000488 | 3\n\n第 7 次更新后达到 patience，停止。\n恢复第 4 次更新后的参数：\n训练损失 ≈ 0.889285\n验证损失 ≈ 0.000000","detail":"停止时的参数不一定最好，所以恢复保存的检查点。这里仅有一个验证样本，结果只能演示算法；真实停止设置需要更可靠的验证集，独立测试集留到最终评估。若要继续训练，还需恢复相应优化器状态。"}];const bs=[...document.querySelectorAll('button')];function select(i){bs.forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));document.querySelector('[data-label]').textContent=nodes[i].label;document.querySelector('[data-formula]').textContent=nodes[i].formula;document.querySelector('[data-detail]').textContent=nodes[i].detail;}bs.forEach((b,i)=>b.addEventListener('click',()=>select(i)));select(0);new ResizeObserver(()=>parent.postMessage({type:"flow-height",height:document.documentElement.scrollHeight},"*")).observe(document.body);</script></body></html>
